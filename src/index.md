@@ -5,4 +5,6 @@ title: Start
 
 # holydraft
 
-Das ist die Startseite.
+Willkommen auf unserer Entwicklungsumgebung.
+
+👉 [Zur Form-Entwicklung](/form-dev/)
