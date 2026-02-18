@@ -20,3 +20,1350 @@ Hier bauen wir später unsere Formularlogik auf.
 
 
 
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>CAD-Daten Anfrage & Upload</title>
+  <style>
+    :root{
+      --bg:#0b0f14;
+      --card:#0f1620;
+      --text:#e8eef6;
+      --muted:#9fb0c3;
+      --line:rgba(255,255,255,.10);
+      --accent:#4fd1c5;
+      --danger:#ff5a7a;
+      --shadow: 0 14px 45px rgba(0,0,0,.45);
+      --r:16px;
+      --r2:12px;
+      --font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+    }
+    *{box-sizing:border-box;font-family:var(--font)}
+    body{
+      margin:0;
+      background:
+        radial-gradient(1200px 600px at 15% 10%, rgba(79,209,197,.18), transparent 60%),
+        radial-gradient(900px 500px at 85% 30%, rgba(96,165,250,.18), transparent 60%),
+        linear-gradient(180deg, #070a0e, #0b0f14 30%, #0b0f14);
+      color:var(--text);
+      padding:28px;
+    }
+    .wrap{max-width:1400px;margin:0 auto}
+    .top{
+      display:flex;gap:16px;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;
+      margin-bottom:18px;
+    }
+    h1{font-size:22px;margin:0 0 6px 0;font-weight:760;letter-spacing:.2px}
+    h2{font-size:14px;margin:0;font-weight:780;letter-spacing:.2px}
+    .sub{color:var(--muted);margin:0;font-size:13px;line-height:1.45;max-width:900px}
+    .pill{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:10px 12px;border:1px solid var(--line);border-radius:999px;
+      background:rgba(255,255,255,.03);
+      color:var(--muted);font-size:13px
+    }
+    .pill strong{color:var(--text);font-weight:760}
+
+    .card{
+      background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      border:1px solid var(--line);
+      border-radius:var(--r);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+      margin-bottom:16px;
+    }
+    .card .hd{
+      padding:16px 16px 12px 16px;
+      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,0));
+      border-bottom:1px solid var(--line);
+      display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+    }
+    .card .hd h2{margin:0;font-size:14px;font-weight:780;letter-spacing:.2px}
+    .card .bd{padding:16px}
+
+    .kpiRow{display:flex;gap:10px;flex-wrap:wrap}
+    .kpi{
+      padding:10px 12px;border-radius:12px;border:1px solid var(--line);
+      background:rgba(255,255,255,.02);
+      min-width:150px;
+    }
+    .kpi .t{font-size:12px;color:var(--muted)}
+    .kpi .v{font-size:16px;font-weight:780;margin-top:2px}
+
+    .drop{
+      border:1px dashed rgba(255,255,255,.22);
+      border-radius:var(--r2);
+      padding:18px;
+      background:rgba(255,255,255,.03);
+      transition:.18s ease;
+      display:flex;gap:12px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;
+    }
+    .drop.drag{border-color:rgba(79,209,197,.65); background:rgba(79,209,197,.08)}
+    .drop .left{min-width:240px}
+    .drop .title{font-weight:780;margin:0 0 4px 0}
+    .drop .hint{margin:0;color:var(--muted);font-size:13px}
+
+    .btn{
+      display:inline-flex;align-items:center;justify-content:center;gap:8px;
+      padding:10px 12px;border-radius:12px;border:1px solid var(--line);
+      background:rgba(255,255,255,.04);color:var(--text);
+      cursor:pointer;user-select:none;
+      transition:.18s ease;
+      font-weight:680;font-size:13px;
+    }
+    .btn:hover{transform:translateY(-1px); background:rgba(255,255,255,.06)}
+    .btn:active{transform:translateY(0)}
+    .btn.primary{
+      border-color:rgba(79,209,197,.35);
+      background:linear-gradient(180deg, rgba(79,209,197,.24), rgba(79,209,197,.08));
+    }
+    .btn.ghost{background:transparent}
+    .btn.danger{
+      border-color:rgba(255,90,122,.35);
+      background:linear-gradient(180deg, rgba(255,90,122,.20), rgba(255,90,122,.07));
+    }
+    .btn.small{padding:8px 10px;border-radius:10px;font-weight:680}
+    .btn.submit{
+      width:100%;
+      padding:14px 16px;
+      background:linear-gradient(180deg, rgba(79,209,197,.30), rgba(79,209,197,.12));
+      border-color:rgba(79,209,197,.35);
+      font-size:14px;
+      font-weight:700;
+      cursor:pointer;
+      margin-top:12px;
+    }
+    .btn.submit:hover{background:linear-gradient(180deg, rgba(79,209,197,.35), rgba(79,209,197,.15))}
+    .btn.submit:disabled{opacity:.6;cursor:not-allowed}
+    input[type="file"]{display:none}
+
+    .bulkBar{
+      display:flex;gap:10px;flex-wrap:wrap;align-items:center;
+      padding:12px;border:1px solid var(--line);border-radius:var(--r2);
+      background:rgba(255,255,255,.02);
+      margin-top:12px;
+    }
+    .switch{
+      display:flex;gap:10px;align-items:center;
+      padding:8px 10px;border-radius:999px;border:1px solid var(--line);
+      background:rgba(255,255,255,.02);
+      font-size:13px;color:var(--muted)
+    }
+    .switch input{transform:scale(1.1)}
+
+    .controls{
+      display:grid;gap:10px;
+      grid-template-columns: repeat(3, minmax(280px, 1fr));
+      width:100%;
+      margin-top:12px;
+    }
+    @media(max-width:1100px){ .controls{grid-template-columns: repeat(2, minmax(280px, 1fr));} }
+    @media(max-width:740px){ .controls{grid-template-columns: 1fr;} }
+
+    .ctrl{
+      display:flex;gap:10px;align-items:center;justify-content:space-between;
+      padding:10px;border:1px solid var(--line);border-radius:12px;
+      background:rgba(255,255,255,.02);
+    }
+    .ctrl label{color:var(--muted);font-size:13px;min-width:160px}
+    .ctrl .right{display:flex;gap:10px;align-items:center;justify-content:flex-end;flex:1}
+
+    .field{margin-bottom:16px}
+    .field label{display:block;color:var(--muted);font-size:13px;margin-bottom:6px;font-weight:600}
+    .field.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    @media(max-width:740px){.field.two{grid-template-columns:1fr}}
+
+    .inp, select, textarea{
+      width:100%;
+      min-width:140px;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(10,14,20,.65);
+      color:var(--text);
+      outline:none;
+      font-family:inherit;
+    }
+    .inp:focus, select:focus, textarea:focus{border-color:rgba(79,209,197,.55); box-shadow:0 0 0 3px rgba(79,209,197,.12)}
+    .inp.error-highlight, select.error-highlight, textarea.error-highlight{
+      border-color:rgba(255,90,122,.65);
+      box-shadow:0 0 0 3px rgba(255,90,122,.20);
+      background:rgba(255,90,122,.08);
+    }
+    /* highlight for table cells containing checkboxes */
+    tbody td.error-highlight{
+      border-color:rgba(255,90,122,.65);
+      background:rgba(255,90,122,.04);
+      box-shadow:0 0 0 4px rgba(255,90,122,.08) inset;
+    }
+    input[type="checkbox"].error-highlight{
+      outline:2px solid rgba(255,90,122,.65);
+      box-shadow:0 0 0 4px rgba(255,90,122,.08);
+    }
+    textarea{min-height:100px;resize:vertical}
+
+    .richtext-wrapper{
+      display:flex;flex-direction:column;
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:12px;
+      overflow:hidden;
+      background:rgba(10,14,20,.65);
+    }
+    .richtext-toolbar{
+      display:flex;gap:4px;padding:8px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      background:rgba(255,255,255,.02);
+      flex-wrap:wrap;
+    }
+    .richtext-toolbar button{
+      padding:6px 10px;
+      border:1px solid rgba(255,255,255,.2);
+      background:rgba(255,255,255,.05);
+      color:var(--text);
+      cursor:pointer;
+      border-radius:6px;
+      font-size:12px;
+      font-weight:600;
+      transition:.15s ease;
+    }
+    .richtext-toolbar button:hover{background:rgba(255,255,255,.1)}
+    .richtext-toolbar button.active{
+      background:rgba(79,209,197,.2);
+      border-color:rgba(79,209,197,.5);
+    }
+    .richtext-editor{
+      padding:10px 12px;
+      min-height:80px;
+      color:var(--text);
+      outline:none;
+      font-family:inherit;
+      font-size:14px;
+      line-height:1.4;
+      overflow-y:auto;
+      max-height:200px;
+    }
+    .richtext-editor:focus{
+      outline:none;
+    }
+    .richtext-editor img{
+      max-width:100%;
+      height:auto;
+      border-radius:6px;
+      margin:4px 0;
+    }
+
+    .checkbox-row{display:flex;align-items:flex-start;gap:10px;margin-bottom:12px}
+    .checkbox-row input[type="checkbox"]{margin-top:2px;cursor:pointer}
+    .checkbox-row label{margin:0;font-size:13px;color:var(--muted)}
+
+    .tableWrap{overflow:visible;border-radius:var(--r2);border:none;margin-top:12px}
+    
+    .files-list{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+    
+    .file-entry{
+      display:grid;
+      grid-template-columns:repeat(7, 1fr) minmax(280px, 1fr);
+      grid-template-rows:auto auto;
+      gap:10px;
+      padding:12px;
+      border:1px solid var(--line);
+      border-radius:var(--r2);
+      background:linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.01));
+    }
+    
+    .file-entry-field{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      min-height:70px;
+      justify-content:flex-start;
+    }
+    
+    .file-entry-label{
+      font-size:11px;
+      text-transform:uppercase;
+      letter-spacing:.05em;
+      color:var(--muted);
+      font-weight:600;
+    }
+    
+    .file-entry-content{
+      flex:1;
+      display:flex;
+      align-items:flex-start;
+    }
+    
+    .file-entry-checkbox{
+      align-items:center;
+    }
+    
+    .file-entry-file{
+      grid-column:span 2;
+    }
+    
+    .file-entry-notes{
+      grid-column:8;
+      grid-row:1 / 3;
+    }
+
+    @media(max-width:1400px){
+      .file-entry{
+        grid-template-columns:repeat(5, 1fr) minmax(250px, 1fr);
+      }
+      .file-entry-file{
+        grid-column:span 2;
+      }
+      .file-entry-notes{
+        grid-column:6;
+        grid-row:1 / 3;
+      }
+    }
+
+    @media(max-width:1100px){
+      .file-entry{
+        grid-template-columns:repeat(3, 1fr);
+        grid-template-rows:auto;
+      }
+      .file-entry-file{
+        grid-column:span 2;
+      }
+      .file-entry-notes{
+        grid-column:1 / 4;
+        grid-row:auto;
+      }
+    }
+
+    @media(max-width:768px){
+      .file-entry{
+        grid-template-columns:1fr 1fr;
+        grid-template-rows:auto;
+      }
+      .file-entry-file{
+        grid-column:span 2;
+      }
+      .file-entry-notes{
+        grid-column:1 / 3;
+        grid-row:auto;
+      }
+    }
+
+    @media(max-width:480px){
+      .file-entry{
+        grid-template-columns:1fr;
+      }
+      .file-entry-file{
+        grid-column:span 1;
+      }
+      .file-entry-notes{
+        grid-column:1;
+        grid-row:auto;
+      }
+    }
+
+    /* Tooltip styling */
+    .tooltip-wrapper{
+      position:relative;
+      display:inline-block;
+      width:100%;
+    }
+    .tooltip-wrapper:hover::after{
+      content:attr(data-tooltip);
+      position:absolute;
+      bottom:calc(100% + 8px);
+      left:0;
+      background:rgba(0,0,0,.9);
+      color:var(--text);
+      padding:8px 12px;
+      border-radius:6px;
+      font-size:12px;
+      line-height:1.4;
+      white-space:normal;
+      width:max-content;
+      max-width:220px;
+      z-index:1000;
+      pointer-events:none;
+      box-shadow:0 4px 12px rgba(0,0,0,.3);
+    }
+    .tooltip-wrapper:hover::before{
+      content:'';
+      position:absolute;
+      bottom:calc(100% + 2px);
+      left:12px;
+      width:0;
+      height:0;
+      border-left:4px solid transparent;
+      border-right:4px solid transparent;
+      border-top:4px solid rgba(0,0,0,.9);
+      z-index:1000;
+      pointer-events:none;
+    }
+
+    .fileCell{display:flex;gap:10px;align-items:center;min-width:320px}
+    .badge{
+      font-size:12px;color:var(--muted);
+      padding:4px 8px;border:1px solid rgba(255,255,255,.12);
+      border-radius:999px;background:rgba(255,255,255,.02);
+      white-space:nowrap;
+    }
+    .name{
+      font-weight:720;color:var(--text);
+      overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:640px;
+    }
+    .selCell{width:110px}
+    .selWrap{display:flex;gap:10px;align-items:center}
+    .note{
+      color:var(--muted);
+      font-size:13px;line-height:1.5;
+      padding:12px 14px;border:1px solid var(--line);
+      border-radius:var(--r2);
+      background:rgba(255,255,255,.02);
+      margin-top:12px;
+    }
+    .footer{
+      display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;
+      margin-top:12px
+    }
+    .json{
+      margin-top:12px;
+      padding:12px 14px;
+      border:1px solid var(--line);
+      border-radius:var(--r2);
+      background:rgba(255,255,255,.02);
+      color:rgba(232,238,246,.92);
+      white-space:pre-wrap;
+      max-height:280px;
+      overflow:auto;
+      font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size:12px;
+    }
+    .muted{color:var(--muted);font-size:12px}
+    .error{color:#ff5a7a;font-size:13px;margin-top:6px;display:none}
+    .success{color:rgba(79,209,197,.8);font-size:13px;margin-top:6px;display:none}
+    .result{white-space:pre-wrap;background:rgba(79,209,197,.1);border:1px solid rgba(79,209,197,.3);padding:14px;border-radius:var(--r2);margin-top:12px;display:none}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div>
+        <h1>CAD-Daten Anfrage & Upload</h1>
+        <p class="sub">Geben Sie Ihre Kontaktdaten ein, beschreiben Sie Ihr Projekt und laden Sie CAD-Dateien mit Fertigungsparametern hoch.</p>
+      </div>
+      <div class="pill">
+        <span>Bulk:</span> <strong id="bulkState">Aus</strong>
+      </div>
+    </div>
+
+    <!-- Contact Information Card -->
+    <div class="card">
+      <div class="hd">
+        <h2>Ihre Kontaktdaten</h2>
+      </div>
+      <div class="bd">
+        <div class="field">
+          <label for="name">Name *</label>
+          <input id="name" type="text" class="inp" placeholder="Ihr Name" required>
+        </div>
+
+        <div class="field">
+          <label for="email">E-Mail-Adresse *</label>
+          <input id="email" type="email" class="inp" placeholder="ihre@email.de" required>
+        </div>
+
+        <div class="field two">
+          <div>
+            <label for="phone">Telefonnummer</label>
+            <input id="phone" type="tel" class="inp" placeholder="Optional">
+          </div>
+          <div>
+            <label for="subject">Betreff</label>
+            <input id="subject" type="text" class="inp" placeholder="Optional">
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="message">Nachricht</label>
+          <textarea id="message" class="inp" placeholder="Beschreiben Sie Ihr Projekt..."></textarea>
+        </div>
+
+        <p class="muted">Ich bin damit einverstanden, dass meine personenbezogenen Daten (Name und E-Mail-Adresse) elektronisch erhoben, verarbeitet und zum Zwecke der Kontaktaufnahme genutzt werden.</p>
+
+        <div class="checkbox-row">
+          <input type="checkbox" id="consent" required>
+          <label for="consent">Ich stimme zu *</label>
+        </div>
+
+        <p class="muted">Zum Schutz vor Spam: Bitte bestätigen Sie, dass Sie ein Mensch sind.</p>
+        <div class="checkbox-row">
+          <input type="checkbox" id="captcha" required>
+          <label for="captcha">Ich bin kein Roboter *</label>
+        </div>
+
+        <div id="contactError" class="error"></div>
+      </div>
+    </div>
+
+    <!-- File Upload and Data Card -->
+    <div class="card">
+      <div class="hd">
+        <h2>CAD-Dateien & Fertigungsparameter</h2>
+        <div class="kpiRow">
+          <div class="kpi">
+            <div class="t">Dateien</div>
+            <div class="v" id="kpiFiles">0</div>
+          </div>
+          <div class="kpi">
+            <div class="t">Ausgewählt</div>
+            <div class="v" id="kpiSel">0</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bd">
+        <div id="dropzone" class="drop">
+          <div class="left">
+            <p class="title">Drag & Drop</p>
+            <p class="hint">Oder Dateien über den Button auswählen.</p>
+          </div>
+          <div class="right">
+            <label class="btn primary" for="fileInput">Dateien auswählen</label>
+            <input id="fileInput" type="file" multiple />
+            <button id="clearBtn" class="btn danger" type="button">Liste leeren</button>
+          </div>
+        </div>
+
+        <div class="bulkBar">
+          <label class="switch">
+            <input id="bulkToggle" type="checkbox">
+            Bulk-Modus
+          </label>
+          <button id="selectAllBtn" class="btn small" type="button">Alle auswählen</button>
+          <button id="selectNoneBtn" class="btn small" type="button">Auswahl löschen</button>
+        </div>
+
+        <div id="bulkControls" class="controls" style="display:none;">
+          <div class="ctrl">
+            <label>Anzahl Teile</label>
+            <div class="right">
+              <input id="bulkQty" class="inp" type="number" min="1" step="1" placeholder="leer = nicht ändern">
+              <button id="applyQtyBtn" class="btn small primary" type="button">Anwenden</button>
+            </div>
+          </div>
+
+          <div class="ctrl">
+            <label>Material</label>
+            <div class="right">
+              <select id="bulkMaterial">
+                <option value="">(nicht ändern)</option>
+                <option>Stahl</option>
+                <option>VA</option>
+                <option>Alu</option>
+                <option>Sonstige</option>
+              </select>
+              <button id="applyMaterialBtn" class="btn small primary" type="button">Anwenden</button>
+            </div>
+          </div>
+
+          <div class="ctrl">
+            <label>Typ</label>
+            <div class="right">
+              <select id="bulkType">
+                <option value="">(nicht ändern)</option>
+                <option>Einzelteil</option>
+                <option>Baugruppe</option>
+              </select>
+              <button id="applyTypeBtn" class="btn small primary" type="button">Anwenden</button>
+            </div>
+          </div>
+
+          <div class="ctrl">
+            <label>Einzelteile in Baugruppe</label>
+            <div class="right">
+              <input id="bulkParts" class="inp" type="number" min="1" step="1" placeholder="leer = nicht ändern">
+              <button id="applyPartsBtn" class="btn small primary" type="button">Anwenden</button>
+            </div>
+          </div>
+
+          <div class="ctrl">
+            <label>Geometrie vollständig</label>
+            <div class="right">
+              <select id="bulkGeom">
+                <option value="">(nicht ändern)</option>
+                <option value="true">Ja</option>
+                <option value="false">Nein</option>
+              </select>
+              <button id="applyGeomBtn" class="btn small primary" type="button">Anwenden</button>
+            </div>
+          </div>
+
+          <div class="ctrl">
+            <label>Hinweis</label>
+            <div class="right">
+              <span class="muted">Unvollständige Angaben können Mehrkosten verursachen.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="tableWrap">
+          <div id="tbody" class="files-list"></div>
+        </div>
+
+        <div class="note">
+          Durch Rückfragen zu unvollständigen Geometrieangaben können Mehrkosten entstehen. Bei Bedarf erstellen wir ein individuelles Angebot.
+        </div>
+
+        <div class="footer">
+          <button id="exportBtn" class="btn ghost" type="button">JSON anzeigen</button>
+          <span class="muted">Die Daten werden zusammen mit Ihren Kontaktinformationen übermittelt.</span>
+        </div>
+
+        <pre id="out" class="json" style="display:none;"></pre>
+      </div>
+    </div>
+
+    <!-- Submit Card -->
+    <div class="card">
+      <div class="bd">
+        <button id="submitBtn" class="btn submit" type="button">ANFRAGE SENDEN</button>
+        <div id="submitError" class="error"></div>
+        <div id="submitSuccess" class="success"></div>
+        <div id="result" class="result"></div>
+      </div>
+    </div>
+  </div>
+
+<script>
+const FLOW_URL = 'https://default08926f862a4442cb9c3a571b4f447a.5d.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/ad1ab3b820fc42719b3f1dd310b13bea/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=akVk6S147KLp0KEti-mC9nTyk0aVIgMI1lZQzAQLy-c';
+
+// Form elements
+const nameInput = document.getElementById('name');
+const emailInput = document.getElementById('email');
+const phoneInput = document.getElementById('phone');
+const subjectInput = document.getElementById('subject');
+const messageInput = document.getElementById('message');
+const consentCheckbox = document.getElementById('consent');
+const captchaCheckbox = document.getElementById('captcha');
+const contactError = document.getElementById('contactError');
+const submitError = document.getElementById('submitError');
+const submitSuccess = document.getElementById('submitSuccess');
+
+// File upload elements
+const dropzone = document.getElementById('dropzone');
+const fileInput = document.getElementById('fileInput');
+const tbody = document.getElementById('tbody');
+const out = document.getElementById('out');
+const exportBtn = document.getElementById('exportBtn');
+const clearBtn = document.getElementById('clearBtn');
+
+// Bulk mode elements
+const bulkToggle = document.getElementById('bulkToggle');
+const bulkControls = document.getElementById('bulkControls');
+const selHeader = document.getElementById('selHeader');
+const bulkState = document.getElementById('bulkState');
+
+const selectAllBtn = document.getElementById('selectAllBtn');
+const selectNoneBtn = document.getElementById('selectNoneBtn');
+
+const bulkQty = document.getElementById('bulkQty');
+const applyQtyBtn = document.getElementById('applyQtyBtn');
+
+const bulkMaterial = document.getElementById('bulkMaterial');
+const applyMaterialBtn = document.getElementById('applyMaterialBtn');
+
+const bulkType = document.getElementById('bulkType');
+const applyTypeBtn = document.getElementById('applyTypeBtn');
+
+const bulkParts = document.getElementById('bulkParts');
+const applyPartsBtn = document.getElementById('applyPartsBtn');
+
+const bulkGeom = document.getElementById('bulkGeom');
+const applyGeomBtn = document.getElementById('applyGeomBtn');
+
+const kpiFiles = document.getElementById('kpiFiles');
+const kpiSel = document.getElementById('kpiSel');
+
+const submitBtn = document.getElementById('submitBtn');
+const resultDiv = document.getElementById('result');
+
+/** @type {{id:string,file:File, qty:number|null, material:string, type:'Einzelteil'|'Baugruppe', partsInAsm:number|null, geomOk:boolean, selected:boolean}[]} */
+const rows = [];
+
+// Utility functions
+function uid() {
+  return 'f_' + Math.random().toString(16).slice(2) + '_' + Date.now().toString(16);
+}
+
+function pad(n){return String(n).padStart(2,'0');}
+function fmt(ts){
+  const d = ts instanceof Date ? ts : new Date(ts);
+  return `${pad(d.getDate())}-${pad(d.getMonth()+1)}-${d.getFullYear()}_${pad(d.getHours())}-${pad(d.getMinutes())}`;
+}
+function slug(s){return (s||'').toLowerCase().replace(/[^a-z0-9_-]/g,'_');}
+function toBase64(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(file);});}
+function validateEmail(email){return /\S+@\S+\.\S+/.test(email);}
+function escapeHtml(str){return (str||'').replace(/[&<>"']/g,c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));}
+function formatBytes(bytes){
+  if(bytes < 1024) return bytes + ' B';
+  if(bytes < 1024*1024) return Math.round(bytes/1024) + ' KB';
+  if(bytes < 1024*1024*1024) return Math.round(bytes/(1024*1024)) + ' MB';
+  return (bytes/(1024*1024*1024)).toFixed(2) + ' GB';
+}
+
+function showError(msg, el = contactError){
+  el.textContent = msg;
+  el.style.display = 'block';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function hideError(el = contactError){
+  el.style.display = 'none';
+}
+
+function highlightField(element){
+  if(!element) return;
+  element.classList.add('error-highlight');
+  element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  
+  // Auto-unhighlight on input
+  const clearHighlight = () => {
+    element.classList.remove('error-highlight');
+    element.removeEventListener('input', clearHighlight);
+    element.removeEventListener('change', clearHighlight);
+  };
+  element.addEventListener('input', clearHighlight);
+  element.addEventListener('change', clearHighlight);
+}
+
+function highlightCheckbox(checkbox){
+  if(!checkbox) return;
+  const container = checkbox.closest('td') || checkbox.parentElement;
+  if(container) container.classList.add('error-highlight');
+  checkbox.classList.add('error-highlight');
+  checkbox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+  // Auto-unhighlight on change or click
+  const clearHighlight = () => {
+    if(container) container.classList.remove('error-highlight');
+    checkbox.classList.remove('error-highlight');
+    checkbox.removeEventListener('change', clearHighlight);
+    checkbox.removeEventListener('click', clearHighlight);
+  };
+  checkbox.addEventListener('change', clearHighlight);
+  checkbox.addEventListener('click', clearHighlight);
+}
+
+
+function materialSelect(value = '') {
+    const sel = document.createElement('select');
+    sel.className = 'inp';
+    const defaultOpt = document.createElement('option');
+    defaultOpt.value = '';
+    defaultOpt.textContent = 'Bitte angeben';
+    defaultOpt.selected = value === '';
+    sel.appendChild(defaultOpt);
+    
+  const options = ['Stahl','VA','Alu','Sonstige'];
+  for (const o of options) {
+    const opt = document.createElement('option');
+    opt.value = o; opt.textContent = o;
+    if (o === value) opt.selected = true;
+    sel.appendChild(opt);
+  }
+  return sel;
+}
+
+function typeSelect(value = 'Einzelteil') {
+  const sel = document.createElement('select');
+  sel.className = 'inp';
+  for (const o of ['Einzelteil','Baugruppe']) {
+    const opt = document.createElement('option');
+    opt.value = o; opt.textContent = o;
+    if (o === value) opt.selected = true;
+    sel.appendChild(opt);
+  }
+  return sel;
+}
+
+function updateKPIs(){
+  kpiFiles.textContent = String(rows.length);
+  kpiSel.textContent = String(rows.filter(r => r.selected).length);
+}
+
+function addFiles(fileList) {
+  const files = Array.from(fileList || []);
+  for (const file of files) addRow(file);
+  updateKPIs();
+}
+
+function addRow(file) {
+  const id = uid();
+  const model = {
+    id,
+    file,
+    qty: null,
+    material: '',
+    type: 'Einzelteil',
+    partsInAsm: null,
+    geomOk: false,
+    notes: '',
+    selected: false
+  };
+  rows.push(model);
+
+  const entry = document.createElement('div');
+  entry.className = 'file-entry';
+  entry.dataset.id = id;
+
+  // selection
+  const fieldSel = document.createElement('div');
+  fieldSel.className = 'file-entry-field file-entry-checkbox';
+  fieldSel.style.display = bulkToggle.checked ? '' : 'none';
+  const labelSel = document.createElement('div');
+  labelSel.className = 'file-entry-label';
+  labelSel.textContent = 'Auswahl';
+  const cbSel = document.createElement('input');
+  cbSel.type = 'checkbox';
+  cbSel.addEventListener('change', () => { model.selected = cbSel.checked; updateKPIs(); });
+  fieldSel.appendChild(labelSel);
+  fieldSel.appendChild(cbSel);
+
+  // file
+  const fieldFile = document.createElement('div');
+  fieldFile.className = 'file-entry-field file-entry-file';
+  const labelFile = document.createElement('div');
+  labelFile.className = 'file-entry-label';
+  labelFile.textContent = 'Datei';
+  const fileCell = document.createElement('div');
+  fileCell.className = 'file-entry-content';
+  fileCell.style.flexDirection = 'column';
+  fileCell.style.gap = '4px';
+  const name = document.createElement('div');
+  name.className = 'name';
+  name.title = file.name;
+  name.textContent = file.name;
+  const badge = document.createElement('span');
+  badge.className = 'badge';
+  badge.textContent = formatBytes(file.size);
+  fileCell.appendChild(name);
+  fileCell.appendChild(badge);
+  fieldFile.appendChild(labelFile);
+  fieldFile.appendChild(fileCell);
+
+  // qty
+  const fieldQty = document.createElement('div');
+  fieldQty.className = 'file-entry-field';
+  const labelQty = document.createElement('div');
+  labelQty.className = 'file-entry-label';
+  labelQty.textContent = 'Anzahl Teile';
+  const qtyWrapper = document.createElement('div');
+  qtyWrapper.className = 'tooltip-wrapper file-entry-content';
+  qtyWrapper.setAttribute('data-tooltip', 'Wie viele Teile sollen später von dieser Position produziert werden?');
+  const inpQty = document.createElement('input');
+  inpQty.className = 'inp';
+  inpQty.type = 'number';
+  inpQty.min = '1';
+  inpQty.step = '1';
+  inpQty.placeholder = 'z.B. 10';
+  inpQty.addEventListener('input', () => {
+    const v = inpQty.value.trim();
+    model.qty = v === '' ? null : Number(v);
+  });
+  qtyWrapper.appendChild(inpQty);
+  fieldQty.appendChild(labelQty);
+  fieldQty.appendChild(qtyWrapper);
+
+  // material
+  const fieldMat = document.createElement('div');
+  fieldMat.className = 'file-entry-field';
+  const labelMat = document.createElement('div');
+  labelMat.className = 'file-entry-label';
+  labelMat.textContent = 'Material';
+  const selMat = materialSelect(model.material);
+  selMat.addEventListener('change', () => model.material = selMat.value);
+  fieldMat.appendChild(labelMat);
+  fieldMat.appendChild(selMat);
+
+  // type
+  const fieldType = document.createElement('div');
+  fieldType.className = 'file-entry-field';
+  const labelType = document.createElement('div');
+  labelType.className = 'file-entry-label';
+  labelType.textContent = 'Typ';
+  const selType = typeSelect(model.type);
+  fieldType.appendChild(labelType);
+  fieldType.appendChild(selType);
+
+  // parts in asm
+  const fieldParts = document.createElement('div');
+  fieldParts.className = 'file-entry-field';
+  const labelParts = document.createElement('div');
+  labelParts.className = 'file-entry-label';
+  labelParts.textContent = 'Einzelteile';
+  const inpParts = document.createElement('input');
+  inpParts.className = 'inp';
+  inpParts.type = 'number';
+  inpParts.min = '1';
+  inpParts.step = '1';
+  inpParts.placeholder = 'nur Baugruppe';
+  inpParts.disabled = true;
+  inpParts.addEventListener('input', () => {
+    const v = inpParts.value.trim();
+    model.partsInAsm = v === '' ? null : Number(v);
+  });
+  fieldParts.appendChild(labelParts);
+  fieldParts.appendChild(inpParts);
+
+  selType.addEventListener('change', () => {
+    model.type = selType.value;
+    const isAsm = model.type === 'Baugruppe';
+    inpParts.disabled = !isAsm;
+    if (!isAsm) {
+      inpParts.value = '';
+      model.partsInAsm = null;
+    }
+  });
+
+  // geom ok
+  const fieldGeom = document.createElement('div');
+  fieldGeom.className = 'file-entry-field';
+  const labelGeom = document.createElement('div');
+  labelGeom.className = 'file-entry-label';
+  labelGeom.textContent = 'Geometrie OK';
+  const cbGeom = document.createElement('input');
+  cbGeom.type = 'checkbox';
+  cbGeom.addEventListener('change', () => model.geomOk = cbGeom.checked);
+  fieldGeom.appendChild(labelGeom);
+  fieldGeom.appendChild(cbGeom);
+
+  // sonstige angaben (notes)
+  const fieldNotes = document.createElement('div');
+  fieldNotes.className = 'file-entry-field file-entry-notes';
+  const labelNotes = document.createElement('div');
+  labelNotes.className = 'file-entry-label';
+  labelNotes.textContent = 'Sonstige Angaben';
+  const noteWrapper = document.createElement('div');
+  noteWrapper.className = 'richtext-wrapper';
+  noteWrapper.style.flex = '1';
+  
+  const toolbar = document.createElement('div');
+  toolbar.className = 'richtext-toolbar';
+  
+  const btnBold = document.createElement('button');
+  btnBold.type = 'button';
+  btnBold.textContent = 'B';
+  btnBold.title = 'Fett (Ctrl+B)';
+  btnBold.addEventListener('click', (e) => { e.preventDefault(); document.execCommand('bold'); editor.focus(); });
+  
+  const btnItalic = document.createElement('button');
+  btnItalic.type = 'button';
+  btnItalic.textContent = 'I';
+  btnItalic.title = 'Kursiv (Ctrl+I)';
+  btnItalic.addEventListener('click', (e) => { e.preventDefault(); document.execCommand('italic'); editor.focus(); });
+  
+  const btnUnderline = document.createElement('button');
+  btnUnderline.type = 'button';
+  btnUnderline.textContent = 'U';
+  btnUnderline.title = 'Unterstrichen (Ctrl+U)';
+  btnUnderline.addEventListener('click', (e) => { e.preventDefault(); document.execCommand('underline'); editor.focus(); });
+  
+  toolbar.appendChild(btnBold);
+  toolbar.appendChild(btnItalic);
+  toolbar.appendChild(btnUnderline);
+  
+  const editor = document.createElement('div');
+  editor.className = 'richtext-editor';
+  editor.contentEditable = 'true';
+  editor.setAttribute('data-placeholder', 'z.B. spezielle Anforderungen...');
+  editor.style.minHeight = '50px';
+  
+  // Track content changes
+  editor.addEventListener('input', () => {
+    model.notes = editor.innerHTML;
+  });
+  
+  // Paste handler for images
+  editor.addEventListener('paste', (e) => {
+    e.preventDefault();
+    const items = e.clipboardData.items;
+    let hasImage = false;
+    
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf('image') !== -1) {
+        hasImage = true;
+        const blob = items[i].getAsFile();
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const img = document.createElement('img');
+          img.src = event.target.result;
+          img.style.maxWidth = '100%';
+          img.style.marginTop = '6px';
+          editor.appendChild(img);
+          model.notes = editor.innerHTML;
+        };
+        reader.readAsDataURL(blob);
+      }
+    }
+    
+    // Paste text if no image
+    if (!hasImage) {
+      const text = e.clipboardData.getData('text/plain');
+      if (text) {
+        document.execCommand('insertText', false, text);
+      }
+    }
+  });
+  
+  // Track formatting button states
+  editor.addEventListener('selectionchange', () => {
+    btnBold.classList.toggle('active', document.queryCommandState('bold'));
+    btnItalic.classList.toggle('active', document.queryCommandState('italic'));
+    btnUnderline.classList.toggle('active', document.queryCommandState('underline'));
+  });
+  editor.addEventListener('click', () => {
+    setTimeout(() => {
+      btnBold.classList.toggle('active', document.queryCommandState('bold'));
+      btnItalic.classList.toggle('active', document.queryCommandState('italic'));
+      btnUnderline.classList.toggle('active', document.queryCommandState('underline'));
+    }, 0);
+  });
+  
+  noteWrapper.appendChild(toolbar);
+  noteWrapper.appendChild(editor);
+  fieldNotes.appendChild(labelNotes);
+  fieldNotes.appendChild(noteWrapper);
+
+  entry._refs = { cbSel, inpQty, selMat, selType, inpParts, cbGeom, editor, fieldSel };
+
+  entry.appendChild(fieldSel);
+  entry.appendChild(fieldFile);
+  entry.appendChild(fieldQty);
+  entry.appendChild(fieldMat);
+  entry.appendChild(fieldType);
+  entry.appendChild(fieldParts);
+  entry.appendChild(fieldGeom);
+  entry.appendChild(fieldNotes);
+  tbody.appendChild(entry);
+}
+
+function forEachSelected(fn){
+  tbody.querySelectorAll('.file-entry').forEach(entry => {
+    const id = entry.dataset.id;
+    const model = rows.find(r => r.id === id);
+    if (!model || !model.selected) return;
+    fn(model, entry);
+  });
+}
+
+// Bulk mode toggle
+bulkToggle.addEventListener('change', () => {
+  const on = bulkToggle.checked;
+  bulkControls.style.display = on ? '' : 'none';
+  bulkState.textContent = on ? 'An' : 'Aus';
+
+  tbody.querySelectorAll('.file-entry').forEach(entry => {
+    if (!entry._refs || !entry._refs.fieldSel) return;
+    entry._refs.fieldSel.style.display = on ? '' : 'none';
+  });
+
+  if (!on) {
+    rows.forEach(r => r.selected = false);
+    tbody.querySelectorAll('tr').forEach(tr => tr._refs?.cbSel && (tr._refs.cbSel.checked = false));
+    updateKPIs();
+  }
+});
+
+selectAllBtn.addEventListener('click', () => {
+  rows.forEach(r => r.selected = true);
+  tbody.querySelectorAll('.file-entry').forEach(entry => entry._refs?.cbSel && (entry._refs.cbSel.checked = true));
+  updateKPIs();
+});
+
+selectNoneBtn.addEventListener('click', () => {
+  rows.forEach(r => r.selected = false);
+  tbody.querySelectorAll('.file-entry').forEach(entry => entry._refs?.cbSel && (entry._refs.cbSel.checked = false));
+  updateKPIs();
+});
+
+applyQtyBtn.addEventListener('click', () => {
+  const v = bulkQty.value.trim();
+  if (v === '') return;
+  const num = Number(v);
+  if (!Number.isFinite(num) || num <= 0) return;
+  forEachSelected((model, tr) => {
+    model.qty = num;
+    tr._refs.inpQty.value = String(num);
+  });
+});
+
+applyMaterialBtn.addEventListener('click', () => {
+  const val = bulkMaterial.value;
+  if (!val) return;
+  forEachSelected((model, tr) => {
+    model.material = val;
+    tr._refs.selMat.value = val;
+  });
+});
+
+applyTypeBtn.addEventListener('click', () => {
+  const val = bulkType.value;
+  if (!val) return;
+  forEachSelected((model, tr) => {
+    model.type = val;
+    tr._refs.selType.value = val;
+
+    const isAsm = val === 'Baugruppe';
+    tr._refs.inpParts.disabled = !isAsm;
+    if (!isAsm) {
+      tr._refs.inpParts.value = '';
+      model.partsInAsm = null;
+    }
+  });
+});
+
+applyPartsBtn.addEventListener('click', () => {
+  const v = bulkParts.value.trim();
+  if (v === '') return;
+  const num = Number(v);
+  if (!Number.isFinite(num) || num <= 0) return;
+  forEachSelected((model, tr) => {
+    if (model.type !== 'Baugruppe') return;
+    model.partsInAsm = num;
+    tr._refs.inpParts.value = String(num);
+    tr._refs.inpParts.disabled = false;
+  });
+});
+
+applyGeomBtn.addEventListener('click', () => {
+  const raw = bulkGeom.value;
+  if (raw === '') return;
+  const val = raw === 'true';
+  forEachSelected((model, tr) => {
+    model.geomOk = val;
+    tr._refs.cbGeom.checked = val;
+  });
+});
+
+clearBtn.addEventListener('click', () => {
+  rows.splice(0, rows.length);
+  tbody.innerHTML = '';
+  out.style.display = 'none';
+  updateKPIs();
+});
+
+// Drag & drop
+dropzone.addEventListener('dragover', (e) => {
+  e.preventDefault();
+  dropzone.classList.add('drag');
+});
+dropzone.addEventListener('dragleave', () => dropzone.classList.remove('drag'));
+dropzone.addEventListener('drop', (e) => {
+  e.preventDefault();
+  dropzone.classList.remove('drag');
+  if (e.dataTransfer && e.dataTransfer.files) addFiles(e.dataTransfer.files);
+});
+
+// File input
+fileInput.addEventListener('change', () => {
+  addFiles(fileInput.files);
+  fileInput.value = '';
+});
+
+// Export
+exportBtn.addEventListener('click', () => {
+  const data = rows.map(r => ({
+    filename: r.file.name,
+    size: r.file.size,
+    qty: r.qty,
+    material: r.material,
+    type: r.type,
+    partsInAssembly: r.partsInAsm,
+    geometryComplete: r.geomOk,
+    notes: r.notes
+  }));
+  out.textContent = JSON.stringify(data, null, 2);
+  out.style.display = '';
+});
+
+// Submit form
+submitBtn.addEventListener('click', async () => {
+  hideError(submitError);
+  submitSuccess.style.display = 'none';
+
+  // Validate contact fields
+  const name = nameInput.value.trim();
+  const email = emailInput.value.trim();
+  const phone = phoneInput.value.trim();
+  const subject = subjectInput.value.trim();
+  const message = messageInput.value.trim();
+  const consent = consentCheckbox.checked;
+  const captcha = captchaCheckbox.checked;
+
+  if(!name) {
+    showError('Name ist erforderlich', submitError);
+    highlightField(nameInput);
+    return;
+  }
+  if(!validateEmail(email)) {
+    showError('Bitte gültige E-Mail-Adresse eingeben', submitError);
+    highlightField(emailInput);
+    return;
+  }
+  if(!consent) {
+    showError('Bitte der Verarbeitung zustimmen', submitError);
+    highlightField(consentCheckbox);
+    return;
+  }
+  if(!captcha) {
+    showError('Bitte bestätigen, dass Sie kein Roboter sind', submitError);
+    highlightField(captchaCheckbox);
+    return;
+  }
+
+  // Validate CAD file data
+  for(let i = 0; i < rows.length; i++){
+    const row = rows[i];
+    const tr = tbody.querySelector(`tr[data-id="${row.id}"]`);
+    
+    if(row.qty === null || row.qty === ''){
+      showError(`Datei "${row.file.name}": Anzahl Teile ist erforderlich`, submitError);
+      highlightField(tr._refs.inpQty);
+      return;
+    }
+    if(row.material === '' || !row.material){
+      showError(`Datei "${row.file.name}": Material muss ausgewählt sein`, submitError);
+      highlightField(tr._refs.selMat);
+      return;
+    }
+    if(!row.geomOk){
+      showError(`Datei "${row.file.name}": Geometrie OK muss bestätigt sein`, submitError);
+      highlightCheckbox(tr._refs.cbGeom);
+      return;
+    }
+  }
+
+  if(rows.length === 0){
+    showError('Bitte mindestens eine Datei hochladen', submitError);
+    return;
+  }
+
+  // Prepare file data
+  const files = rows.map(r => r.file).slice();
+  const maxSize = 500*1024*1024;
+  for(const f of files){ 
+    if(f.size>maxSize){ 
+      return showError('Eine Datei überschreitet 500 MB Limit.', submitError);
+    } 
+  }
+
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Sende…';
+
+  // Determine target folder
+  const folder = `holydraft_10000/${fmt(new Date())}_${slug(name)}`;
+
+  // Create overview text file
+  const filenames = files.map(f=>f.name);
+  let txt = `Name: ${name}\nEmail: ${email}\nTelefon: ${phone}\nBetreff: ${subject}\nNachricht:\n${message}\n\nOrdner: ${folder}\n\nUpload-Daten:\n`;
+  for(const n of filenames){ txt += n + '\n'; }
+
+  // Add CAD parameters summary
+  txt += '\n\nCAD-Parameter:\n';
+  for(const row of rows){
+    txt += `\n${row.file.name}:\n`;
+    txt += `  Menge: ${row.qty || 'n/a'}\n`;
+    txt += `  Material: ${row.material}\n`;
+    txt += `  Typ: ${row.type}\n`;
+    if(row.type === 'Baugruppe') txt += `  Einzelteile: ${row.partsInAsm || 'n/a'}\n`;
+    txt += `  Geometrie vollständig: ${row.geomOk ? 'Ja' : 'Nein'}\n`;
+    if(row.notes) txt += `  Sonstige Angaben: ${row.notes}\n`;
+  }
+
+  const metaFile = new File([txt], `${slug(name)}_request.txt`, {type:'text/plain'});
+  files.unshift(metaFile);
+
+  let uploadSuccess = true;
+  for(const f of files){
+    try{
+      const base64 = await toBase64(f);
+      const payload = {
+        filename: f.name,
+        contentType: f.type || 'application/octet-stream',
+        contentBase64: base64.split(',')[1],
+        folder,
+        name: null,
+        email: null,
+        phone: null,
+        subject: null,
+        message: null,
+        files: null,
+        finalize: false
+      };
+      
+      if(f === metaFile){
+        payload.name = name;
+        payload.email = email;
+        payload.phone = phone;
+        payload.subject = subject;
+        payload.message = message;
+        payload.files = rows.map(r => ({
+          filename: r.file.name,
+          qty: r.qty,
+          material: r.material,
+          type: r.type,
+          partsInAssembly: r.partsInAsm,
+          geometryComplete: r.geomOk,
+          notes: r.notes
+        }));
+        payload.finalize = true;
+      } else {
+        // Find and add file metadata for non-meta files
+        const fileRow = rows.find(r => r.file === f);
+        if(fileRow){
+          payload.qty = fileRow.qty;
+          payload.material = fileRow.material;
+          payload.type = fileRow.type;
+          payload.partsInAssembly = fileRow.partsInAsm;
+          payload.geometryComplete = fileRow.geomOk;
+          payload.notes = fileRow.notes;
+        }
+      }
+      
+      const response = await fetch(FLOW_URL, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify(payload)
+      });
+      
+      if(!response.ok){
+        uploadSuccess = false;
+        console.error(`Upload error for ${f.name}: ${response.status} ${response.statusText}`);
+      }
+    }catch(err){
+      uploadSuccess = false;
+      console.error('Upload error:', f.name, err);
+    }
+  }
+
+  submitBtn.style.display = 'none';
+  
+  if(uploadSuccess){
+    resultDiv.style.display = 'block';
+    resultDiv.style.borderColor = 'rgba(79,209,197,.3)';
+    resultDiv.style.background = 'rgba(79,209,197,.1)';
+    resultDiv.textContent = `Vielen Dank!\nDeine Daten wurden erfolgreich übermittelt.\nWir haben dir eine Bestätigungsmail gesendet und melden uns so bald wie möglich.`;
+  } else {
+    submitError.style.display = 'block';
+    showError('Fehler beim Hochladen. Bitte versuchen Sie es später erneut.', submitError);
+    submitBtn.style.display = 'inline-flex';
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'ANFRAGE SENDEN';
+  }
+});
+
+updateKPIs();
+</script>
+</body>
