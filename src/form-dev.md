@@ -1,29 +1,7 @@
 ---
-
 layout: base.njk
-
 title: Form Dev
-
----
-
-
-
-\# Form Development
-
-
-
-Das ist die Entwicklungsseite für Formulare.
-
-
-
-Hier bauen wir später unsere Formularlogik auf.
-
-
-
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>CAD-Daten Anfrage & Upload</title>
+head: |
   <style>
     :root{
       --bg:#0b0f14;
@@ -445,7 +423,8 @@ Hier bauen wir später unsere Formularlogik auf.
     .success{color:rgba(79,209,197,.8);font-size:13px;margin-top:6px;display:none}
     .result{white-space:pre-wrap;background:rgba(79,209,197,.1);border:1px solid rgba(79,209,197,.3);padding:14px;border-radius:var(--r2);margin-top:12px;display:none}
   </style>
-</head>
+---
+
 <body>
   <div class="wrap">
     <div class="top">
@@ -1367,3 +1346,5 @@ submitBtn.addEventListener('click', async () => {
 updateKPIs();
 </script>
 </body>
+
+\# Form Development
