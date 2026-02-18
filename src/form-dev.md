@@ -425,7 +425,6 @@ head: |
   </style>
 ---
 
-<body>
   <div class="wrap">
     <div class="top">
       <div>
@@ -1345,6 +1344,5 @@ submitBtn.addEventListener('click', async () => {
 
 updateKPIs();
 </script>
-</body>
 
 \# Form Development
