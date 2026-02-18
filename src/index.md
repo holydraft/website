@@ -7,4 +7,4 @@ title: Start
 
 Willkommen auf unserer Entwicklungsumgebung.
 
-👉 [Zur Form-Entwicklung](/form-dev/)
+👉 [Zur Form-Entwicklung](form-dev/)
